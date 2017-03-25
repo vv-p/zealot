@@ -6,6 +6,12 @@ from ..exceptions import TimeoutException, InvalidArgumentException
 
 
 def waiting_for(func=None, *, timeout=DEFAULT_TIMEOUT):
+    """ Set maximum execution time for a function 
+    
+    :param func: function to decorate
+    :param timeout: maximum allowed execution time
+    :return: result of the func
+    """
     def _alarm_handler(signal_number, stack_frame):
         raise TimeoutException('Timeout exceed')
 
