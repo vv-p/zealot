@@ -1,11 +1,11 @@
 import functools
 import signal
 
-from ..defaults import ENABLE_TIMEOUTS, DEFAULT_TIMEOUT
-from ..exceptions import TimeoutException, InvalidArgumentException
+from zealot.conf import settings
+from zealot.exceptions import TimeoutException, InvalidArgumentException
 
 
-def waiting_for(func=None, *, timeout=DEFAULT_TIMEOUT):
+def waiting_for(func=None, *, timeout=settings.DEFAULT_TIMEOUT):
     """ Set maximum execution time for a function 
     
     :param func: function to decorate
@@ -25,9 +25,13 @@ def waiting_for(func=None, *, timeout=DEFAULT_TIMEOUT):
 
     @functools.wraps(func)
     def inner(*args, **kwargs):
+        initial = signal.getsignal(signal.SIGALRM)
         signal.signal(signal.SIGALRM, _alarm_handler)
         signal.alarm(timeout)
-        return func(*args, **kwargs)
+        try:
+            return func(*args, **kwargs)
+        finally:
+            signal.signal(signal.SIGALRM, initial)
 
-    return inner if ENABLE_TIMEOUTS else func
+    return inner if settings.ENABLE_TIMEOUTS else func
 
